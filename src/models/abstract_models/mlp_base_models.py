@@ -7,12 +7,11 @@ Description: This file is used to define the MLP model with entity embeddings
 """
 
 from src.models.abstract_models.custom_torch_base import TorchCustomModel
-from src.models.blocks.genes_signature_block import GeneGraphAttentionEncoder
 from src.models.blocks.mlp_blocks import MLPEncodingBlock
 from src.data.processing.datasets import MaskType, PetaleDataset
 from src.evaluation.early_stopping import EarlyStopper
 from src.utils.metrics import BinaryCrossEntropy, Metric, RootMeanSquaredError
-from torch import cat, no_grad, tensor, ones, sigmoid
+from torch import cat, no_grad, tensor, sigmoid
 from torch.nn import BCEWithLogitsLoss, Dropout, Identity, Linear, MSELoss
 from torch.utils.data import DataLoader
 from typing import Callable, Dict, List, Optional
@@ -102,13 +101,6 @@ class MLP(TorchCustomModel):
 
         # We add a linear layer to complete the layers
         self._linear_layer = Linear(layers[-1], output_size)
-
-    @property
-    def att_dict(self) -> Optional[Dict[str, tensor]]:
-        if isinstance(self._genes_encoding_block, GeneGraphAttentionEncoder):
-            return self._genes_encoding_block.att_dict
-        else:
-            return None
 
     def _execute_train_step(self, train_data: DataLoader) -> float:
         """
