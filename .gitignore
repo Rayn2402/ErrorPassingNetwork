@@ -1,0 +1,4 @@
+settings/database.py
+.idea
+*.pyc
+*.html
