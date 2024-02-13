@@ -112,6 +112,7 @@ if __name__ == '__main__':
     from src.models.gas import PetaleGASR, GASHP
     from src.models.gat import PetaleGATR, GATHP
     from src.models.gcn import PetaleGCNR, GCNHP
+    from src.models.linear_regression import PetaleLR
     from src.models.mlp import PetaleMLPR, MLPHP
     from src.models.random_forest import PetaleRFR
     from src.models.xgboost_ import PetaleXGBR
@@ -172,6 +173,37 @@ if __name__ == '__main__':
 
     # We start a timer for the whole experiment
     first_start = time.time()
+
+    """
+    Linear regression experiment
+    """
+    if args.linear:
+
+        # Start timer
+        start = time.time()
+
+        # Creation of the dataset
+        dataset = PetaleDataset(df, target, cont_cols, cat_cols, classification=False)
+
+        # Creation of the evaluator
+        evaluator = Evaluator(model_constructor=PetaleLR,
+                              dataset=dataset,
+                              masks=masks_without_val,
+                              evaluation_name=f"LR_{eval_id}",
+                              hps={},
+                              n_trials=0, # This model has no hyperparameters
+                              evaluation_metrics=evaluation_metrics,
+                              feature_selector=feature_selector,
+                              fixed_params={},
+                              save_hps_importance=True,
+                              save_optimization_history=True,
+                              seed=args.seed,
+                              pred_path=args.path)
+
+        # Evaluation
+        evaluator.evaluate()
+
+        print(f"Time taken for linear regression (min): {(time.time() - start) / 60:.2f}")
 
     """
     Random Forest experiment
