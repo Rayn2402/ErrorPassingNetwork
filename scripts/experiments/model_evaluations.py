@@ -158,11 +158,11 @@ if __name__ == '__main__':
     # We save the string that will help identify evaluations
     eval_id = ""
     if args.remove_walk_variables:
-        eval_id += "_nw"
+        eval_id += "nw"
     if args.remove_sex_variable:
-        eval_id += "_ns"
+        eval_id += "ns"
     if args.rho > 0:
-        eval_id += "_sam"
+        eval_id += "sam"
         sam_search_space = {Range.MIN: 0, Range.MAX: args.rho}  # Sharpness-Aware Minimization search space
     else:
         sam_search_space = {Range.VALUE: 0}
