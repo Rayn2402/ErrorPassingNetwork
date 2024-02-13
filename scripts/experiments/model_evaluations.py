@@ -9,8 +9,6 @@ from argparse import ArgumentParser
 from os.path import dirname, realpath
 from copy import deepcopy
 
-NB_TRIALS = 500
-
 def retrieve_arguments():
     """
     Creates a parser for VO2 peak prediction experiments
@@ -46,7 +44,7 @@ def retrieve_arguments():
                         help='If true, runs mlp experiment')
     parser.add_argument('-rf', '--random_forest', default=False, action='store_true',
                         help='If true, runs random forest experiment')
-    parser.add_argument('-xg', '--xg_boost', default=False, action='store_true',
+    parser.add_argument('-xg', '--xgboost', default=False, action='store_true',
                         help='If true, runs xgboost experiment')
     parser.add_argument('-gas', '--gas', default=False, action='store_true',
                         help='If true, runs Graph Attention Smoothing experiment')
@@ -60,6 +58,8 @@ def retrieve_arguments():
                         help='Maximal number of epochs during training')
     parser.add_argument('-patience', '--patience', type=int, default=10,
                         help='Number of epochs allowed without improvement (for early stopping)')
+    parser.add_argument('-args.nb_trials', '--args.nb_trials', type=int, default=500,
+                        help='Number of hyperparameter sets sampled during hyperparameter optimization')
 
     # Graph construction parameters
     parser.add_argument('-w_sim', '--weighted_similarity', default=False, action='store_true',
@@ -190,7 +190,7 @@ if __name__ == '__main__':
                               masks=masks_without_val,
                               evaluation_name=f"RF_{eval_id}",
                               hps=ss.RF_HPS,
-                              n_trials=NB_TRIALS,
+                              n_trials=args.nb_trials,
                               evaluation_metrics=evaluation_metrics,
                               feature_selector=feature_selector,
                               save_hps_importance=True,
@@ -220,7 +220,7 @@ if __name__ == '__main__':
                               masks=masks_without_val,
                               evaluation_name=f"XGBoost_{eval_id}",
                               hps=ss.XGBOOST_HPS,
-                              n_trials=NB_TRIALS,
+                              n_trials=args.nb_trials,
                               evaluation_metrics=evaluation_metrics,
                               feature_selector=feature_selector,
                               save_hps_importance=True,
@@ -267,7 +267,7 @@ if __name__ == '__main__':
                               masks=masks,
                               evaluation_name=f"MLP_{eval_id}",
                               hps=ss.MLP_HPS,
-                              n_trials=NB_TRIALS,
+                              n_trials=args.nb_trials,
                               evaluation_metrics=evaluation_metrics,
                               feature_selector=feature_selector,
                               fixed_params=fixed_params,
@@ -314,7 +314,7 @@ if __name__ == '__main__':
                               masks=masks,
                               evaluation_name=f"enet_{eval_id}",
                               hps=ss.ENET_HPS,
-                              n_trials=NB_TRIALS,
+                              n_trials=args.nb_trials,
                               evaluation_metrics=evaluation_metrics,
                               feature_selector=feature_selector,
                               fixed_params=fixed_params,
@@ -372,7 +372,7 @@ if __name__ == '__main__':
                               masks=masks,
                               evaluation_name=f"GAS_{eval_id}",
                               hps=ss.GASHPS,
-                              n_trials=NB_TRIALS,
+                              n_trials=args.nb_trials,
                               evaluation_metrics=evaluation_metrics,
                               feature_selector=feature_selector,
                               fixed_params=fixed_params,
@@ -439,7 +439,7 @@ if __name__ == '__main__':
                                       masks=masks,
                                       evaluation_name=f"{prefix}GAT{nb_neighbor}_{eval_id}",
                                       hps=ss.GATHPS,
-                                      n_trials=NB_TRIALS,
+                                      n_trials=args.nb_trials,
                                       evaluation_metrics=evaluation_metrics,
                                       fixed_params=fixed_params,
                                       fixed_params_update_function=update_fixed_params,
@@ -506,7 +506,7 @@ if __name__ == '__main__':
                                       masks=masks,
                                       evaluation_name=f"{prefix}GCN{nb_neighbor}_{eval_id}",
                                       hps=ss.GCNHPS,
-                                      n_trials=NB_TRIALS,
+                                      n_trials=args.nb_trials,
                                       evaluation_metrics=evaluation_metrics,
                                       fixed_params=fixed_params,
                                       fixed_params_update_function=update_fixed_params,
