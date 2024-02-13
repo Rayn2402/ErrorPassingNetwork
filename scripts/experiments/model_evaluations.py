@@ -206,7 +206,7 @@ if __name__ == '__main__':
     """
     XGBoost experiment
     """
-    if args.xg_boost:
+    if args.xgboost:
 
         # Start timer
         start = time.time()
