@@ -20,7 +20,7 @@ in the ```data``` directory. Records of the experiments will be stored in ```rec
 as they will be completed.
 
 ### Labonté equation
-```python scripts/experiments/original_equation.py```
+```python scripts/experiments/original_equation.py --from_csv```
 
 Specs of our computer and execution times recorded for each experiment
 are displayed below.   
