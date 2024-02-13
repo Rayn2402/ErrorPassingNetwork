@@ -58,7 +58,7 @@ def retrieve_arguments():
                         help='Maximal number of epochs during training')
     parser.add_argument('-patience', '--patience', type=int, default=10,
                         help='Number of epochs allowed without improvement (for early stopping)')
-    parser.add_argument('-args.nb_trials', '--args.nb_trials', type=int, default=500,
+    parser.add_argument('-nb_trials', '--nb_trials', type=int, default=500,
                         help='Number of hyperparameter sets sampled during hyperparameter optimization')
 
     # Graph construction parameters
