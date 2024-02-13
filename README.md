@@ -12,14 +12,15 @@ To have all the requirements needed, you must do the following actions:
 - Clone this repo: ```git clone --```
 - Move into the directory: ```cd --/```
 - Create a virtual environment with conda: ```conda env create --file settings/env.yml```
-- Activate your new environment: ```conda activate petale```
+- Activate your new environment: ```conda activate epn```
   
 ## Test the implementation
 You can write the following lines in a terminal to replicate our experiments using the **randomly generated** data stored
 in the ```data``` directory. Records of the experiments will be stored in ```records/experiments``` directory
 as they will be completed.
 
-
+### Labonté equation
+```python scripts/experiments/original_equation.py```
 
 Specs of our computer and execution times recorded for each experiment
 are displayed below.   
