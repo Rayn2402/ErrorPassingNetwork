@@ -128,4 +128,4 @@ if __name__ == '__main__':
     push_valid_to_train(masks)
 
     # Execution of the experiment
-    execute_original_equation_experiment(dts=dataset, m=masks, eval_name="original_equation")
+    execute_original_equation_experiment(dts=dataset, m=masks, eval_name="labonte")
