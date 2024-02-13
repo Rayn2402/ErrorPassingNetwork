@@ -156,7 +156,7 @@ if __name__ == '__main__':
         feature_selector = None
 
     # We save the string that will help identify evaluations
-    eval_id = "vo2_automated"
+    eval_id = ""
     if args.remove_walk_variables:
         eval_id += "_nw"
     if args.remove_sex_variable:
