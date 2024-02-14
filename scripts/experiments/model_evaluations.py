@@ -396,14 +396,14 @@ if __name__ == '__main__':
         fixed_params = update_fixed_params(dataset)
 
         # Update of the hyperparameters
-        ss.GASHPS[EPNHP.RHO.name] = sam_search_space
+        ss.EPNHPS[EPNHP.RHO.name] = sam_search_space
 
         # Creation of the evaluator
         evaluator = Evaluator(model_constructor=PetaleEPN,
                               dataset=dataset,
                               masks=masks,
                               evaluation_name=f"EPN_{eval_id}",
-                              hps=ss.GASHPS,
+                              hps=ss.EPNHPS,
                               n_trials=args.nb_trials,
                               evaluation_metrics=evaluation_metrics,
                               feature_selector=feature_selector,
