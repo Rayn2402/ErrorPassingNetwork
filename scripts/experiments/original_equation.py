@@ -59,7 +59,7 @@ def execute_original_equation_experiment(dts: PetaleDataset,
     Returns: None
     """
     # We save the evaluation metrics
-    eval_metrics = [AbsoluteError(), SpearmanR(), MeanAbsolutePercentageError(), RootMeanSquaredError()]
+    eval_metrics = [AbsoluteError(), MeanAbsolutePercentageError(), SpearmanR(), RootMeanSquaredError()]
 
     # We run tests for each masks
     for k, v in m.items():

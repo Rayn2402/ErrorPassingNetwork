@@ -146,7 +146,7 @@ if __name__ == '__main__':
     push_valid_to_train(masks_without_val)
 
     # Initialization of the dictionary containing the evaluation metrics
-    evaluation_metrics = [AbsoluteError(), SpearmanR(), MeanAbsolutePercentageError(), RootMeanSquaredError()]
+    evaluation_metrics = [AbsoluteError(), MeanAbsolutePercentageError(), SpearmanR(), RootMeanSquaredError()]
 
     # Initialization of a feature selector
     if args.feature_selection:
