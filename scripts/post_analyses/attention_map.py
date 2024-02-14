@@ -19,7 +19,7 @@ if __name__ == '__main__':
     from src.data.extraction.constants import PARTICIPANT, SEX
     from src.data.processing.datasets import MaskType, PetaleDataset
     from src.data.processing.sampling import extract_masks, get_VO2_data
-    from src.models.epn import PetaleGASR
+    from src.models.epn import PetaleEPN
     from src.recording.recording import Recorder
 
     # 1. Set the number of the data split for which P057 is in the test set
@@ -73,13 +73,13 @@ if __name__ == '__main__':
 
     # 10. Create the model
     mu, std, _ = dts.current_train_stats()
-    epn_wrapper = PetaleGASR(previous_pred_idx=len(dts.cont_idx) - 1,
-                             pred_mu=mu.loc['pred0'],
-                             pred_std=std.loc['pred0'],
-                             num_cont_col=len(dts.cont_idx),
-                             cat_idx=dts.cat_idx,
-                             cat_sizes=dts.cat_sizes,
-                             cat_emb_sizes=dts.cat_sizes)
+    epn_wrapper = PetaleEPN(previous_pred_idx=len(dts.cont_idx) - 1,
+                            pred_mu=mu.loc['pred0'],
+                            pred_std=std.loc['pred0'],
+                            num_cont_col=len(dts.cont_idx),
+                            cat_idx=dts.cat_idx,
+                            cat_sizes=dts.cat_sizes,
+                            cat_emb_sizes=dts.cat_sizes)
 
     # 11. Load the parameters of the model
     path = join(Paths.EXPERIMENTS_RECORDS, 'with_walk',

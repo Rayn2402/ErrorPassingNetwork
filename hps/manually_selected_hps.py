@@ -2,7 +2,7 @@
 Description: File used to store fixed hps for the experiments
 """
 
-from src.models.epn import GASHP
+from src.models.epn import EPNHP
 from src.models.gat import GATHP
 from src.models.gcn import GCNHP
 from src.models.mlp import MLPHP
@@ -50,11 +50,11 @@ ENET_HPS = {
 }
 
 GASHPS = {
-    GASHP.ALPHA.name: 0,
-    GASHP.BATCH_SIZE.name: None,
-    GASHP.BETA.name: 0,
-    GASHP.LR.name: 0.001,
-    GASHP.RHO.name: 0,
+    EPNHP.ALPHA.name: 0,
+    EPNHP.BATCH_SIZE.name: None,
+    EPNHP.BETA.name: 0,
+    EPNHP.LR.name: 0.001,
+    EPNHP.RHO.name: 0,
 }
 
 GATHPS = {

@@ -46,8 +46,8 @@ def retrieve_arguments():
                         help='If true, runs random forest experiment')
     parser.add_argument('-xg', '--xgboost', default=False, action='store_true',
                         help='If true, runs xgboost experiment')
-    parser.add_argument('-gas', '--gas', default=False, action='store_true',
-                        help='If true, runs Graph Attention Smoothing experiment')
+    parser.add_argument('-epn', '--epn', default=False, action='store_true',
+                        help='If true, runs Error Passing Network experiment')
     parser.add_argument('-gat', '--gat', default=False, action='store_true',
                         help='If true, runs Graph Attention Network experiment')
     parser.add_argument('-gcn', '--gcn', default=False, action='store_true',
@@ -109,7 +109,7 @@ if __name__ == '__main__':
     from src.data.processing.feature_selection import FeatureSelector
     from src.data.processing.sampling import extract_masks, get_VO2_data, push_valid_to_train
     from src.evaluation.evaluation import Evaluator
-    from src.models.epn import PetaleGASR, GASHP
+    from src.models.epn import PetaleEPN, EPNHP
     from src.models.gat import PetaleGATR, GATHP
     from src.models.gcn import PetaleGCNR, GCNHP
     from src.models.linear_regression import PetaleLR
@@ -344,7 +344,7 @@ if __name__ == '__main__':
         evaluator = Evaluator(model_constructor=PetaleMLPR,
                               dataset=dataset,
                               masks=masks,
-                              evaluation_name=f"enet_{eval_id}",
+                              evaluation_name=f"Enet_{eval_id}",
                               hps=ss.ENET_HPS,
                               n_trials=args.nb_trials,
                               evaluation_metrics=evaluation_metrics,
@@ -364,7 +364,7 @@ if __name__ == '__main__':
     """
     GAS experiment
     """
-    if args.gas and (args.path is not None):
+    if args.epn and (args.path is not None):
 
         # Start timer
         start = time.time()
@@ -396,13 +396,13 @@ if __name__ == '__main__':
         fixed_params = update_fixed_params(dataset)
 
         # Update of the hyperparameters
-        ss.GASHPS[GASHP.RHO.name] = sam_search_space
+        ss.GASHPS[EPNHP.RHO.name] = sam_search_space
 
         # Creation of the evaluator
-        evaluator = Evaluator(model_constructor=PetaleGASR,
+        evaluator = Evaluator(model_constructor=PetaleEPN,
                               dataset=dataset,
                               masks=masks,
-                              evaluation_name=f"GAS_{eval_id}",
+                              evaluation_name=f"EPN_{eval_id}",
                               hps=ss.GASHPS,
                               n_trials=args.nb_trials,
                               evaluation_metrics=evaluation_metrics,

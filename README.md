@@ -32,7 +32,7 @@ time of test runs.
 python scripts/experiments/model_evaluations.py \
 --from_csv \
 --remove_sex_variable \
---gas \
+--epn \
 --path records/experiments/labonte/ \
 --additional_tag labonte \
 --nb_trials 50
@@ -55,7 +55,7 @@ python scripts/experiments/model_evaluations.py \
 python scripts/experiments/model_evaluations.py \
 --from_csv \
 --remove_walk_variables \
---gas \
+--epn \
 --path records/experiments/LR_nw/ \
 --additional_tag LR \
 --nb_trials 50
@@ -66,7 +66,7 @@ python scripts/experiments/model_evaluations.py \
 python scripts/experiments/model_evaluations.py \
 --from_csv \
 --remove_walk_variables \
---gas \
+--epn \
 --path records/experiments/RF_nw/ \
 --additional_tag RF \
 --nb_trials 50
@@ -77,7 +77,7 @@ python scripts/experiments/model_evaluations.py \
 python scripts/experiments/model_evaluations.py \
 --from_csv \
 --remove_walk_variables \
---gas \
+--epn \
 --path records/experiments/XGBoost_nw/ \
 --additional_tag XGBoost \
 --nb_trials 50
