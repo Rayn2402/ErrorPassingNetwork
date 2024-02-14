@@ -1,3 +1,6 @@
+"""
+Description: This file contains the class which generates anonymized data
+"""
 from os.path import join
 from typing import List, Optional
 
