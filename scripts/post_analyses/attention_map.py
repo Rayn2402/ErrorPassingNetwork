@@ -19,7 +19,7 @@ if __name__ == '__main__':
     from src.data.extraction.constants import PARTICIPANT, SEX
     from src.data.processing.datasets import MaskType, PetaleDataset
     from src.data.processing.sampling import extract_masks, get_VO2_data
-    from src.models.gas import PetaleGASR
+    from src.models.epn import PetaleGASR
     from src.recording.recording import Recorder
 
     # 1. Set the number of the data split for which P057 is in the test set

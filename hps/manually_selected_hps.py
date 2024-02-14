@@ -2,7 +2,7 @@
 Description: File used to store fixed hps for the experiments
 """
 
-from src.models.gas import GASHP
+from src.models.epn import GASHP
 from src.models.gat import GATHP
 from src.models.gcn import GCNHP
 from src.models.mlp import MLPHP

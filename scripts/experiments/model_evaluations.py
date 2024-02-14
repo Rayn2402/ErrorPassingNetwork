@@ -109,7 +109,7 @@ if __name__ == '__main__':
     from src.data.processing.feature_selection import FeatureSelector
     from src.data.processing.sampling import extract_masks, get_VO2_data, push_valid_to_train
     from src.evaluation.evaluation import Evaluator
-    from src.models.gas import PetaleGASR, GASHP
+    from src.models.epn import PetaleGASR, GASHP
     from src.models.gat import PetaleGATR, GATHP
     from src.models.gcn import PetaleGCNR, GCNHP
     from src.models.linear_regression import PetaleLR
