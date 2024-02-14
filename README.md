@@ -12,6 +12,13 @@ To have all the requirements needed, you must do the following actions:
 - Clone this repo: ```git clone git@github.com:Rayn2402/ErrorPassingNetwork.git```
 - Move into the directory: ```cd ErrorPassingNetwork/```
 - Create a virtual environment with conda: ```conda env create --file settings/env.yml```
+- Install Pytorch [library](https://pytorch.org/get-started/locally/) according to your hardware requirements
+  - Select the latest stable ```Pytorch Build```
+  - Select the appropriate version for ```Your OS```
+  - Select ```Conda``` as the ```Package```
+  - Select ```Python``` as the ```Language```
+  - Select ```Default``` as the ```Compute Platform```
+  - Copy and paste the command provided, but remove ```torchvision``` and ```torchaudio```.
 - Activate your new environment: ```conda activate epn```
   
 ## Test the implementation
