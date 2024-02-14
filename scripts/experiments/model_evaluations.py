@@ -157,17 +157,17 @@ if __name__ == '__main__':
     # We save the string that will help identify evaluations
     eval_id = ""
     if args.remove_walk_variables:
-        eval_id += "nw"
+        eval_id += "_nw"
     if args.remove_sex_variable:
-        eval_id += "ns"
+        eval_id += "_ns"
     if args.rho > 0:
-        eval_id += "sam"
+        eval_id += "_sam"
         sam_search_space = {Range.MIN: 0, Range.MAX: args.rho}  # Sharpness-Aware Minimization search space
     else:
         sam_search_space = {Range.VALUE: 0}
 
     if args.additional_tag is not None:
-        eval_id += f"_{args.additional_tag}"
+        eval_id = f"-{args.additional_tag}{eval_id}"
 
     # We start a timer for the whole experiment
     first_start = time.time()
@@ -187,7 +187,7 @@ if __name__ == '__main__':
         evaluator = Evaluator(model_constructor=PetaleLR,
                               dataset=dataset,
                               masks=masks_without_val,
-                              evaluation_name=f"LR_{eval_id}",
+                              evaluation_name=f"LR{eval_id}",
                               hps={},
                               n_trials=0, # This model has no hyperparameters
                               evaluation_metrics=evaluation_metrics,
@@ -218,7 +218,7 @@ if __name__ == '__main__':
         evaluator = Evaluator(model_constructor=PetaleRFR,
                               dataset=dataset,
                               masks=masks_without_val,
-                              evaluation_name=f"RF_{eval_id}",
+                              evaluation_name=f"RF{eval_id}",
                               hps=ss.RF_HPS,
                               n_trials=args.nb_trials,
                               evaluation_metrics=evaluation_metrics,
@@ -248,7 +248,7 @@ if __name__ == '__main__':
         evaluator = Evaluator(model_constructor=PetaleXGBR,
                               dataset=dataset,
                               masks=masks_without_val,
-                              evaluation_name=f"XGBoost_{eval_id}",
+                              evaluation_name=f"XGBoost{eval_id}",
                               hps=ss.XGBOOST_HPS,
                               n_trials=args.nb_trials,
                               evaluation_metrics=evaluation_metrics,
@@ -295,7 +295,7 @@ if __name__ == '__main__':
         evaluator = Evaluator(model_constructor=PetaleMLPR,
                               dataset=dataset,
                               masks=masks,
-                              evaluation_name=f"MLP_{eval_id}",
+                              evaluation_name=f"MLP{eval_id}",
                               hps=ss.MLP_HPS,
                               n_trials=args.nb_trials,
                               evaluation_metrics=evaluation_metrics,
@@ -342,7 +342,7 @@ if __name__ == '__main__':
         evaluator = Evaluator(model_constructor=PetaleMLPR,
                               dataset=dataset,
                               masks=masks,
-                              evaluation_name=f"Enet_{eval_id}",
+                              evaluation_name=f"Enet{eval_id}",
                               hps=ss.ENET_HPS,
                               n_trials=args.nb_trials,
                               evaluation_metrics=evaluation_metrics,
@@ -357,10 +357,10 @@ if __name__ == '__main__':
         # Evaluation
         evaluator.evaluate()
 
-        print(f"Time taken for enet (minutes): {(time.time() - start) / 60:.2f}")
+        print(f"Time taken for Enet (minutes): {(time.time() - start) / 60:.2f}")
 
     """
-    GAS experiment
+    EPN experiment
     """
     if args.epn and (args.path is not None):
 
@@ -400,7 +400,7 @@ if __name__ == '__main__':
         evaluator = Evaluator(model_constructor=PetaleEPN,
                               dataset=dataset,
                               masks=masks,
-                              evaluation_name=f"EPN_{eval_id}",
+                              evaluation_name=f"EPN{eval_id}",
                               hps=ss.EPNHPS,
                               n_trials=args.nb_trials,
                               evaluation_metrics=evaluation_metrics,
@@ -467,7 +467,7 @@ if __name__ == '__main__':
                 evaluator = Evaluator(model_constructor=PetaleGATR,
                                       dataset=dataset,
                                       masks=masks,
-                                      evaluation_name=f"{prefix}GAT{nb_neighbor}_{eval_id}",
+                                      evaluation_name=f"{prefix}GAT{nb_neighbor}{eval_id}",
                                       hps=ss.GATHPS,
                                       n_trials=args.nb_trials,
                                       evaluation_metrics=evaluation_metrics,
@@ -534,7 +534,7 @@ if __name__ == '__main__':
                 evaluator = Evaluator(model_constructor=PetaleGCNR,
                                       dataset=dataset,
                                       masks=masks,
-                                      evaluation_name=f"{prefix}GCN{nb_neighbor}_{eval_id}",
+                                      evaluation_name=f"{prefix}GCN{nb_neighbor}{eval_id}",
                                       hps=ss.GCNHPS,
                                       n_trials=args.nb_trials,
                                       evaluation_metrics=evaluation_metrics,
