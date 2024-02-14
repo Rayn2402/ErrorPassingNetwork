@@ -38,7 +38,7 @@ if __name__ == '__main__':
     # 5. Add the predictions of the past model as a variable
 
     # 5.0 Load the predictions
-    pred_path = join(Paths.EXPERIMENTS_RECORDS, 'with_walk', 'original_equation')
+    pred_path = join(Paths.EXPERIMENTS_RECORDS, 'with_walk', 'labonte')
     with open(join(pred_path, f"Split_{SPLIT}", Recorder.RECORDS_FILE), "r") as read_file:
         data = jsload(read_file)
 
@@ -83,7 +83,7 @@ if __name__ == '__main__':
 
     # 11. Load the parameters of the model
     path = join(Paths.EXPERIMENTS_RECORDS, 'with_walk',
-                'EPN-OE', f'Split_{SPLIT}', 'torch_model.pt')
+                'EPN-L', f'Split_{SPLIT}', 'torch_model.pt')
 
     epn_wrapper.model.load_state_dict(load(path))
 
@@ -104,65 +104,6 @@ if __name__ == '__main__':
     # 16. Extract patient ids
     print(f'Patients: {[dts.ids[i] for i in idx]}')
     print(f'Attn scores: {top10_attn}')
-
-
-
-
-    #
-    # # Dataframe creation
-    # participants = [dts.ids[i] for i in test_mask]
-    # idx_to_gene = {v: k for k, v in dts._gene_idx.items()}
-    # genes = []
-    # for v in dts.gene_idx_groups.values():
-    #     for g in v:
-    #         genes.append(idx_to_gene[g])
-    #
-    # data = {}
-    # for i, p in enumerate(participants):
-    #     data[p] = {gene: gene_att[i, j].item() for j, gene in enumerate(genes)}
-    #
-    # heat_map_df = DataFrame.from_dict(data, orient='index')
-    #
-    # # Heatmap creation
-    # plt.rc('text', usetex=True)
-    # genes_df = dts.get_imputed_dataframe(include_ids_column=True, include_target_column=True).set_index(PARTICIPANT)
-    # genes_df = genes_df.iloc[test_mask]
-    # genes_df.sort_values(target, inplace=True)
-    #
-    # heat_map_df = heat_map_df.join(genes_df[[target]])
-    # heat_map_df.sort_values(target, inplace=True)
-    # heat_map_df.drop([target], axis=1, inplace=True)
-    # heat_map_df = heat_map_df[sorted(heat_map_df.columns, key=lambda x: int(x.split('_')[0]))]
-    #
-    # genes_df = genes_df[heat_map_df.columns]
-    # genes_df.replace("0/0", 0, inplace=True)
-    # genes_df.replace("0/1", 1, inplace=True)
-    # genes_df.replace("1/1", 2, inplace=True)
-    # genes_df = genes_df.astype(int)
-    #
-    # heat_map_df.rename(columns={c: c.replace("_", ":") for c in heat_map_df.columns}, inplace=True)
-    # genes_df.rename(columns={c: c.replace("_", ":") for c in genes_df.columns}, inplace=True)
-    #
-    # fig, ((ax0, dummy_ax), (ax1, cbar_ax)) = plt.subplots(nrows=2, ncols=2, sharex='col',
-    #                                                       gridspec_kw={'height_ratios': [1, 10], 'width_ratios': [20, 1]})
-    # heatmap(heat_map_df, annot=genes_df, annot_kws={"fontsize": 8}, cbar_ax=cbar_ax, xticklabels=True, ax=ax1)
-    # cbar_ax.set_ylabel('Attention')
-    # ax1.set_ylabel('Survivors in the holdout set')
-    # ax1.set_xlabel('SNPs')
-    #
-    # # Histogram creation
-    # att_means = heat_map_df.mean().to_numpy()
-    # ax0.bar([i + 0.5 for i in range(len(att_means))], att_means, width=0.8, color='grey')
-    # func = lambda x, pos: "" if isclose(x, 0) else x
-    # ax0.spines.right.set_visible(False)
-    # ax0.spines.top.set_visible(False)
-    # ax0.xaxis.set_visible(False)
-    # ax0.yaxis.set_major_formatter(ticker.FuncFormatter(func))
-    # dummy_ax.axis('off')
-    #
-    # plt.tight_layout()
-    # for f in ['pdf', 'svg']:
-    #     plt.savefig(f'obesity_snps_att_heatmap.{f}')
 
 
 
