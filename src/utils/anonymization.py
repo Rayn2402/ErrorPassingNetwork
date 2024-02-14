@@ -57,9 +57,6 @@ class RandomAnonymizer:
             # Get the mean and standard deviation of each numerical column
             mean, std = dataset[num_cols].mean().values, dataset[num_cols].std().values
 
-            # Get the minimum and maximum of each numerical column
-            minimum, maximum = dataset[num_cols].min().values, dataset[num_cols].max().values
-
             # Generate n data using a gaussian distribution for each numerical column
             num_data = normal(mean, std, size=(n, len(mean)))
             num_dict = {}
