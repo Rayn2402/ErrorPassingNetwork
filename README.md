@@ -83,6 +83,12 @@ python scripts/experiments/model_evaluations.py \
 --nb_trials 50
 ```
 
+### Summarizing all results
+To summarize the results of test runs, run the command below. The output will be stored in ```records/csv/results.csv```.
+```
+python scripts/utils/get_scores_csv.py --path records/experiments/ --filename results
+```
+
 Specs of our computer and execution times recorded for each experiment
 are displayed below.   
 
