@@ -415,7 +415,7 @@ if __name__ == '__main__':
         # Evaluation
         evaluator.evaluate()
 
-        print(f"Time taken for GAS (minutes): {(time.time() - start) / 60:.2f}")
+        print(f"Time taken for EPN (minutes): {(time.time() - start) / 60:.2f}")
 
     """
     GAT experiment
