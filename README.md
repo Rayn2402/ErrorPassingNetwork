@@ -9,7 +9,7 @@ shared in the** ```data``` **directory**.
 ## Installation
 To have all the requirements needed, you must do the following actions:
 - Open a terminal
-- Clone this repo: ```git clone git@github.com:Rayn2402/ErrorPassingNetwork.git```
+- Clone this repo: ```git clone git@github.com:[LINK REVEALED AT SUBMISSION].git```
 - Move into the directory: ```cd ErrorPassingNetwork/```
 - Create a virtual environment with all requirements (except Pytorch) by running the following commands:
   - ```conda create --name epn python=3.10 scipy seaborn pandas numpy tqdm matplotlib scikit-learn plotly python-kaleido ```
