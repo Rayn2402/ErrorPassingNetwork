@@ -1,0 +1,19 @@
+name: epn
+channels:
+  - defaults
+dependencies:
+  - numpy
+  - python=3.10
+  - scikit-learn
+  - scipy
+  - seaborn
+  - matplotlib
+  - plotly
+  - python-kaleido
+  - tqdm
+  - pandas
+  - optuna
+  - py-xgboost
+  - dgl
+  - cmaes
+prefix: /home/local/USHERBROOKE/rayn2402/anaconda3/envs/epn
