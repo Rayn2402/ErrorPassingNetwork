@@ -128,7 +128,7 @@ are displayed below.
 ```
 ├── checkpoints                   <- Temporary state dictionaries save by the EarlyStopper module
 ├── data
-│   └── vo2_dataset.csv           <- Synthetic dataset for the VO2 peak prediction task
+│   └── vo2_dataset_random.csv    <- Synthetic dataset for the VO2 peak prediction task
 |
 ├── hps                           <- Python files used to store sets of hyperparameter values and search spaces
 ├── masks                         <- JSON files used to store random stratified sampling masks
