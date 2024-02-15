@@ -1,6 +1,10 @@
 """
 Description: This file contains all functions related to data visualization
 """
+import matplotlib as mpl
+import numpy as np
+import seaborn as sns
+import pandas as pd
 
 from matplotlib import pyplot as plt
 from numpy import arange, array
@@ -24,7 +28,7 @@ def format_to_percentage(pct: float, values: List[float]) -> str:
 
     Returns: str
     """
-    absolute = int(round(pct/100.*npsum(values)))
+    absolute = int(round(pct / 100. * npsum(values)))
     return "{:.1f}%".format(pct, absolute)
 
 
@@ -137,7 +141,7 @@ def visualize_epoch_progression(train_history: List[tensor],
         for i in range(len(train_history)):
 
             nb_epochs = len(train_history[i])
-            plt.subplot(1, 2, i+1)
+            plt.subplot(1, 2, i + 1)
             plt.plot(range(nb_epochs), train_history[i], label=MaskType.TRAIN)
             if len(valid_history[i]) != 0:
                 plt.plot(range(nb_epochs), valid_history[i], label=MaskType.VALID)
@@ -216,7 +220,7 @@ def visualize_scaled_importance(data: Dict[str, Dict[str, float]],
     for key in data.keys():
         mean = data[key]["mean"]
         if mean >= 0.01:
-            scaled_imp.append(mean/(data[key]["std"] + 0.001))
+            scaled_imp.append(mean / (data[key]["std"] + 0.001))
             labels.append(key)
 
     # We sort the list according values
@@ -235,3 +239,73 @@ def visualize_scaled_importance(data: Dict[str, Dict[str, float]],
     # We save the plot
     plt.savefig(filename)
     plt.close()
+
+
+def plot_residuals_distribution(model: str,
+                                target_predictions: pd.DataFrame,
+                                saving_dir: str,
+                                file_name: str,
+                                ) -> None:
+    """
+    Creates a histogram plot with mean and standard deviations
+    of a model and model+EPN residuals
+
+    Args:
+        model: baseline model name. ex: Labonté. model must be a column in target_predictions
+        target_predictions: dataframe with targets and predictions of each sample in the dataset
+        saving_dir: path to the directory where to save the figure
+        file_name: name of the file in which the figure is saved
+
+    Returns: None
+    """
+    mpl.rcParams['font.family'] = 'serif'
+    plt.rcParams['mathtext.fontset'] = 'dejavuserif'
+    # Extract errors
+    epn_errors = target_predictions['target'].to_numpy() - target_predictions[model + '+EPN'].to_numpy()
+    other_errors = target_predictions['target'].to_numpy() - target_predictions[model].to_numpy()
+
+    # Calculate the range of errors
+    max_error = max(np.max(epn_errors), np.max(other_errors))
+    min_error = min(np.min(epn_errors), np.min(other_errors))
+    max_abs = max(np.abs(max_error), np.abs(min_error))
+
+    # Specify the bin edges manually
+    bins = np.linspace(-max_abs, max_abs, 25)  # Adjust the number of bins as needed
+    epn_mean, epn_var = np.mean(epn_errors), np.std(epn_errors)
+    other_mean, other_var = np.mean(other_errors), np.std(other_errors)
+    # Create a figure and axis
+    plt.figure(figsize=(16, 10))
+
+    # Plot histograms using Seaborn
+    base_hps = {'edgecolor': 'black', 'alpha': 0.5, 'line_kws': {'linewidth': 3}, 'linewidth': 0.8, 'kde': True}
+    sns.histplot(epn_errors, bins=bins, color='#40bfc1', label='Labonté + EPN', **base_hps)
+    sns.histplot(other_errors, bins=bins, color='#ff6961', label='Labonté', **base_hps)
+
+    # Add mean and variance annotations with LaTeX symbols and bold text
+    plt.text(+20,
+             27,
+             f'$\mathbf{{\mu}}$ = $\mathbf{{{epn_mean:.2f}}}$ $,'
+             f'$ $\mathbf{{\sigma}}$ = $\mathbf{{{epn_var:.2f}}}$',
+             color='#40bfc1',
+             fontsize=24,
+             ha='center')
+    plt.text(-25,
+             27,
+             f'$\mathbf{{\mu}}$ = $\mathbf{{{other_mean:.2f}}}$ $,'
+             f'$ $\mathbf{{\sigma}}$ = $\mathbf{{{other_var:.2f}}}$',
+             color='#ff6961',
+             fontsize=24,
+             ha='center')
+
+    # Set labels and title
+    plt.xlabel('Residuals (ml/kg/min)', fontsize=40, labelpad=10)
+    plt.ylabel('Frequency', fontsize=40, labelpad=35)
+
+    # Add legend
+    plt.legend(fontsize=30)
+    plt.xticks(fontsize=26)
+    plt.yticks(fontsize=26)
+
+    # Save or display the plot
+    plt.savefig(join(saving_dir, f'{file_name}.svg'))
+    plt.clf()

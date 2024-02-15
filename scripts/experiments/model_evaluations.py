@@ -9,8 +9,6 @@ from argparse import ArgumentParser
 from os.path import dirname, realpath
 from copy import deepcopy
 
-NB_TRIALS = 500
-
 def retrieve_arguments():
     """
     Creates a parser for VO2 peak prediction experiments
@@ -46,10 +44,10 @@ def retrieve_arguments():
                         help='If true, runs mlp experiment')
     parser.add_argument('-rf', '--random_forest', default=False, action='store_true',
                         help='If true, runs random forest experiment')
-    parser.add_argument('-xg', '--xg_boost', default=False, action='store_true',
+    parser.add_argument('-xg', '--xgboost', default=False, action='store_true',
                         help='If true, runs xgboost experiment')
-    parser.add_argument('-gas', '--gas', default=False, action='store_true',
-                        help='If true, runs Graph Attention Smoothing experiment')
+    parser.add_argument('-epn', '--epn', default=False, action='store_true',
+                        help='If true, runs Error Passing Network experiment')
     parser.add_argument('-gat', '--gat', default=False, action='store_true',
                         help='If true, runs Graph Attention Network experiment')
     parser.add_argument('-gcn', '--gcn', default=False, action='store_true',
@@ -60,6 +58,8 @@ def retrieve_arguments():
                         help='Maximal number of epochs during training')
     parser.add_argument('-patience', '--patience', type=int, default=10,
                         help='Number of epochs allowed without improvement (for early stopping)')
+    parser.add_argument('-nb_trials', '--nb_trials', type=int, default=500,
+                        help='Number of hyperparameter sets sampled during hyperparameter optimization')
 
     # Graph construction parameters
     parser.add_argument('-w_sim', '--weighted_similarity', default=False, action='store_true',
@@ -109,15 +109,15 @@ if __name__ == '__main__':
     from src.data.processing.feature_selection import FeatureSelector
     from src.data.processing.sampling import extract_masks, get_VO2_data, push_valid_to_train
     from src.evaluation.evaluation import Evaluator
-    from src.models.gas import PetaleGASR, GASHP
+    from src.models.epn import PetaleEPN, EPNHP
     from src.models.gat import PetaleGATR, GATHP
     from src.models.gcn import PetaleGCNR, GCNHP
+    from src.models.linear_regression import PetaleLR
     from src.models.mlp import PetaleMLPR, MLPHP
     from src.models.random_forest import PetaleRFR
     from src.models.xgboost_ import PetaleXGBR
     from src.utils.hyperparameters import Range
-    from src.utils.metrics import AbsoluteError, Pearson, RootMeanSquaredError, SpearmanR, SquaredError,\
-        TopKAbsoluteError, ConcordanceIndex, MeanAbsolutePercentageError
+    from src.utils.metrics import AbsoluteError, MeanAbsolutePercentageError, RootMeanSquaredError, SpearmanR
 
     # Arguments parsing
     args = retrieve_arguments()
@@ -146,8 +146,7 @@ if __name__ == '__main__':
     push_valid_to_train(masks_without_val)
 
     # Initialization of the dictionary containing the evaluation metrics
-    evaluation_metrics = [AbsoluteError(), SpearmanR(), ConcordanceIndex(), Pearson(), SquaredError(),
-                          TopKAbsoluteError(), MeanAbsolutePercentageError(), RootMeanSquaredError()]
+    evaluation_metrics = [AbsoluteError(), MeanAbsolutePercentageError(), SpearmanR(), RootMeanSquaredError()]
 
     # Initialization of a feature selector
     if args.feature_selection:
@@ -156,7 +155,7 @@ if __name__ == '__main__':
         feature_selector = None
 
     # We save the string that will help identify evaluations
-    eval_id = "vo2_automated"
+    eval_id = ""
     if args.remove_walk_variables:
         eval_id += "_nw"
     if args.remove_sex_variable:
@@ -168,10 +167,41 @@ if __name__ == '__main__':
         sam_search_space = {Range.VALUE: 0}
 
     if args.additional_tag is not None:
-        eval_id += f"_{args.additional_tag}"
+        eval_id = f"-{args.additional_tag}{eval_id}"
 
     # We start a timer for the whole experiment
     first_start = time.time()
+
+    """
+    Linear regression experiment
+    """
+    if args.linear:
+
+        # Start timer
+        start = time.time()
+
+        # Creation of the dataset
+        dataset = PetaleDataset(df, target, cont_cols, cat_cols, classification=False)
+
+        # Creation of the evaluator
+        evaluator = Evaluator(model_constructor=PetaleLR,
+                              dataset=dataset,
+                              masks=masks_without_val,
+                              evaluation_name=f"LR{eval_id}",
+                              hps={},
+                              n_trials=0, # This model has no hyperparameters
+                              evaluation_metrics=evaluation_metrics,
+                              feature_selector=feature_selector,
+                              fixed_params={},
+                              save_hps_importance=True,
+                              save_optimization_history=True,
+                              seed=args.seed,
+                              pred_path=args.path)
+
+        # Evaluation
+        evaluator.evaluate()
+
+        print(f"Time taken for linear regression (min): {(time.time() - start) / 60:.2f}")
 
     """
     Random Forest experiment
@@ -188,9 +218,9 @@ if __name__ == '__main__':
         evaluator = Evaluator(model_constructor=PetaleRFR,
                               dataset=dataset,
                               masks=masks_without_val,
-                              evaluation_name=f"RF_{eval_id}",
+                              evaluation_name=f"RF{eval_id}",
                               hps=ss.RF_HPS,
-                              n_trials=NB_TRIALS,
+                              n_trials=args.nb_trials,
                               evaluation_metrics=evaluation_metrics,
                               feature_selector=feature_selector,
                               save_hps_importance=True,
@@ -206,7 +236,7 @@ if __name__ == '__main__':
     """
     XGBoost experiment
     """
-    if args.xg_boost:
+    if args.xgboost:
 
         # Start timer
         start = time.time()
@@ -218,9 +248,9 @@ if __name__ == '__main__':
         evaluator = Evaluator(model_constructor=PetaleXGBR,
                               dataset=dataset,
                               masks=masks_without_val,
-                              evaluation_name=f"XGBoost_{eval_id}",
+                              evaluation_name=f"XGBoost{eval_id}",
                               hps=ss.XGBOOST_HPS,
-                              n_trials=NB_TRIALS,
+                              n_trials=args.nb_trials,
                               evaluation_metrics=evaluation_metrics,
                               feature_selector=feature_selector,
                               save_hps_importance=True,
@@ -265,9 +295,9 @@ if __name__ == '__main__':
         evaluator = Evaluator(model_constructor=PetaleMLPR,
                               dataset=dataset,
                               masks=masks,
-                              evaluation_name=f"MLP_{eval_id}",
+                              evaluation_name=f"MLP{eval_id}",
                               hps=ss.MLP_HPS,
-                              n_trials=NB_TRIALS,
+                              n_trials=args.nb_trials,
                               evaluation_metrics=evaluation_metrics,
                               feature_selector=feature_selector,
                               fixed_params=fixed_params,
@@ -312,9 +342,9 @@ if __name__ == '__main__':
         evaluator = Evaluator(model_constructor=PetaleMLPR,
                               dataset=dataset,
                               masks=masks,
-                              evaluation_name=f"enet_{eval_id}",
+                              evaluation_name=f"Enet{eval_id}",
                               hps=ss.ENET_HPS,
-                              n_trials=NB_TRIALS,
+                              n_trials=args.nb_trials,
                               evaluation_metrics=evaluation_metrics,
                               feature_selector=feature_selector,
                               fixed_params=fixed_params,
@@ -327,12 +357,12 @@ if __name__ == '__main__':
         # Evaluation
         evaluator.evaluate()
 
-        print(f"Time taken for enet (minutes): {(time.time() - start) / 60:.2f}")
+        print(f"Time taken for Enet (minutes): {(time.time() - start) / 60:.2f}")
 
     """
-    GAS experiment
+    EPN experiment
     """
-    if args.gas and (args.path is not None):
+    if args.epn and (args.path is not None):
 
         # Start timer
         start = time.time()
@@ -364,15 +394,15 @@ if __name__ == '__main__':
         fixed_params = update_fixed_params(dataset)
 
         # Update of the hyperparameters
-        ss.GASHPS[GASHP.RHO.name] = sam_search_space
+        ss.EPNHPS[EPNHP.RHO.name] = sam_search_space
 
         # Creation of the evaluator
-        evaluator = Evaluator(model_constructor=PetaleGASR,
+        evaluator = Evaluator(model_constructor=PetaleEPN,
                               dataset=dataset,
                               masks=masks,
-                              evaluation_name=f"GAS_{eval_id}",
-                              hps=ss.GASHPS,
-                              n_trials=NB_TRIALS,
+                              evaluation_name=f"EPN{eval_id}",
+                              hps=ss.EPNHPS,
+                              n_trials=args.nb_trials,
                               evaluation_metrics=evaluation_metrics,
                               feature_selector=feature_selector,
                               fixed_params=fixed_params,
@@ -385,7 +415,7 @@ if __name__ == '__main__':
         # Evaluation
         evaluator.evaluate()
 
-        print(f"Time taken for GAS (minutes): {(time.time() - start) / 60:.2f}")
+        print(f"Time taken for EPN (minutes): {(time.time() - start) / 60:.2f}")
 
     """
     GAT experiment
@@ -437,9 +467,9 @@ if __name__ == '__main__':
                 evaluator = Evaluator(model_constructor=PetaleGATR,
                                       dataset=dataset,
                                       masks=masks,
-                                      evaluation_name=f"{prefix}GAT{nb_neighbor}_{eval_id}",
+                                      evaluation_name=f"{prefix}GAT{nb_neighbor}{eval_id}",
                                       hps=ss.GATHPS,
-                                      n_trials=NB_TRIALS,
+                                      n_trials=args.nb_trials,
                                       evaluation_metrics=evaluation_metrics,
                                       fixed_params=fixed_params,
                                       fixed_params_update_function=update_fixed_params,
@@ -504,9 +534,9 @@ if __name__ == '__main__':
                 evaluator = Evaluator(model_constructor=PetaleGCNR,
                                       dataset=dataset,
                                       masks=masks,
-                                      evaluation_name=f"{prefix}GCN{nb_neighbor}_{eval_id}",
+                                      evaluation_name=f"{prefix}GCN{nb_neighbor}{eval_id}",
                                       hps=ss.GCNHPS,
-                                      n_trials=NB_TRIALS,
+                                      n_trials=args.nb_trials,
                                       evaluation_metrics=evaluation_metrics,
                                       fixed_params=fixed_params,
                                       fixed_params_update_function=update_fixed_params,

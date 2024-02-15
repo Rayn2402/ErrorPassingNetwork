@@ -12,7 +12,7 @@ from src.data.extraction.data_management import PetaleDataManager
 from src.data.processing.datasets import MaskType, PetaleDataset
 from src.data.processing.transforms import ContinuousTransform
 from src.data.processing.sampling import extract_masks, get_VO2_data, push_valid_to_train
-from src.utils.metrics import AbsoluteError, Pearson, RootMeanSquaredError, SquaredError, SpearmanR, TopKAbsoluteError
+from src.utils.metrics import AbsoluteError, MeanAbsolutePercentageError, RootMeanSquaredError, SpearmanR
 from src.data.extraction.constants import *
 from src.recording.recording import compare_prediction_recordings, get_evaluation_recap, Recorder
 from settings.paths import Paths
@@ -59,8 +59,7 @@ def execute_original_equation_experiment(dts: PetaleDataset,
     Returns: None
     """
     # We save the evaluation metrics
-    eval_metrics = [AbsoluteError(), SpearmanR(), Pearson(), SquaredError(),
-                    TopKAbsoluteError(), RootMeanSquaredError()]
+    eval_metrics = [AbsoluteError(), MeanAbsolutePercentageError(), SpearmanR(), RootMeanSquaredError()]
 
     # We run tests for each masks
     for k, v in m.items():
@@ -128,4 +127,4 @@ if __name__ == '__main__':
     push_valid_to_train(masks)
 
     # Execution of the experiment
-    execute_original_equation_experiment(dts=dataset, m=masks, eval_name="original_equation")
+    execute_original_equation_experiment(dts=dataset, m=masks, eval_name="labonte")

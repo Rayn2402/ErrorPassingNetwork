@@ -2,7 +2,7 @@
 Description: File used to store hps search spaces for the experiments
 """
 
-from src.models.gas import GASHP
+from src.models.epn import EPNHP
 from src.models.gat import GATHP
 from src.models.gcn import GCNHP
 from src.models.mlp import MLPHP
@@ -119,22 +119,22 @@ ENET_HPS = {
     },
 }
 
-GASHPS = {
-    GASHP.ALPHA.name: {
+EPNHPS = {
+    EPNHP.ALPHA.name: {
         Range.VALUE: 0
     },
-    GASHP.BATCH_SIZE.name: {
+    EPNHP.BATCH_SIZE.name: {
         Range.VALUE: 32,
     },
-    GASHP.BETA.name: {
+    EPNHP.BETA.name: {
         Range.MIN: 5e-4,
         Range.MAX: 5e-3,
     },
-    GASHP.LR.name: {
+    EPNHP.LR.name: {
         Range.MIN: 5e-3,
         Range.MAX: 5e-2,
     },
-    GASHP.RHO.name: {
+    EPNHP.RHO.name: {
         Range.VALUE: 0
     },
 }

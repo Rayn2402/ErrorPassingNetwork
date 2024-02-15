@@ -1,4 +1,4 @@
-# Error Passing Network
+# Error Passing Network (EPN)
 This repository stores the code implemented to generate the results of the paper:  
 *Development of Error Passing Network for Optimizing the Prediction of VO2 peak in Childhood Acute Leukemia Survivors*
 
@@ -9,17 +9,97 @@ shared in the** ```data``` **directory**.
 ## Installation
 To have all the requirements needed, you must do the following actions:
 - Open a terminal
-- Clone this repo: ```git clone --```
-- Move into the directory: ```cd --/```
-- Create a virtual environment with conda: ```conda env create --file settings/env.yml```
-- Activate your new environment: ```conda activate petale```
+- Clone this repo: ```git clone git@github.com:[LINK REVEALED AT SUBMISSION].git```
+- Move into the directory: ```cd ErrorPassingNetwork/```
+- Create a virtual environment with all requirements (except Pytorch) by running the following commands:
+  - ```conda create --name epn python=3.10 scipy seaborn pandas numpy tqdm matplotlib scikit-learn plotly python-kaleido ```
+  - ```conda activate epn```
+  - ```conda install -c conda-forge optuna py-xgboost cmaes```
+  - ```conda install -c dglteam dgl```
+  - ```pip install psycopg2-binary```
+  - ```pip install -U "ray[default]"```
+- Install Pytorch [library](https://pytorch.org/get-started/locally/) according to your hardware requirements
+  - Select the latest stable ```Pytorch Build```
+  - Select the appropriate version for ```Your OS```
+  - Select ```Conda``` as the ```Package```
+  - Select ```Python``` as the ```Language```
+  - Select ```CPU``` or ```Default``` as the ```Compute Platform```
+  - Copy and paste the command provided, but remove ```torchvision``` and ```torchaudio```.
   
 ## Test the implementation
-You can write the following lines in a terminal to replicate our experiments using the **randomly generated** data stored
-in the ```data``` directory. Records of the experiments will be stored in ```records/experiments``` directory
-as they will be completed.
+You can write the following lines in a terminal to replicate the experiments of the manuscript 
+using the **randomly generated** data stored in the ```data``` directory. Records of the experiments 
+will be stored in ```records/experiments``` directory as they will be completed. For the manuscript,
+```--nb_trials``` was set to ```500```. However, here, we set it to ```50``` to reduce the execution
+time of test runs.
 
 
+### Experiments **with** walk variables
+
+#### - Labonté equation
+```time python scripts/experiments/original_equation.py --from_csv```
+
+#### - Labonté equation + EPN
+```
+python scripts/experiments/model_evaluations.py \
+--from_csv \
+--remove_sex_variable \
+--epn \
+--path records/experiments/labonte/ \
+--additional_tag labonte \
+--nb_trials 50
+```
+### Experiments **without** walk variables
+
+#### - Linear regression, Random Forest and XGBoost 
+```
+python scripts/experiments/model_evaluations.py \
+--from_csv \
+--remove_walk_variables \
+--linear \
+--random_forest \
+--xgboost \
+--nb_trials 50
+```
+
+#### - Linear regression + EPN
+```
+python scripts/experiments/model_evaluations.py \
+--from_csv \
+--remove_walk_variables \
+--epn \
+--path records/experiments/LR_nw/ \
+--additional_tag LR \
+--nb_trials 50
+```
+
+#### - Random Forest + EPN
+```
+python scripts/experiments/model_evaluations.py \
+--from_csv \
+--remove_walk_variables \
+--epn \
+--path records/experiments/RF_nw/ \
+--additional_tag RF \
+--nb_trials 50
+```
+
+#### - XGBoost + EPN
+```
+python scripts/experiments/model_evaluations.py \
+--from_csv \
+--remove_walk_variables \
+--epn \
+--path records/experiments/XGBoost_nw/ \
+--additional_tag XGBoost \
+--nb_trials 50
+```
+
+### Summarizing all results
+To summarize the results of test runs, run the command below. The output will be stored in ```records/csv/results.csv```.
+```
+python scripts/utils/get_scores_csv.py --path records/experiments/ --filename results
+```
 
 Specs of our computer and execution times recorded for each experiment
 are displayed below.   
@@ -29,26 +109,26 @@ are displayed below.
 - CPU: AMD Ryzen 9 3900X 12-Core Processor
 - GPU: None were used for our experiments
 
-| Experiment (with walk variables) | Time |
-|----------------------------------|------|
-| Labonté                          | -    |
-| Labonté + EPN                    | -    |
+| Experiment (with walk variables) | Time  |
+|----------------------------------|-------|
+| Labonté                          | 3s    |
+| Labonté + EPN                    | 3m12s |
 
-| Experiment (without walk variables) | Time |
-|-------------------------------------|------|
-| Linear Regression                   | -    |
-| Random Forest                       | -    |
-| XGBoost                             | -    |
-| Linear Regression + EPN             | -    |
-| Random Forest + EPN                 | -    |
-| XGBoost + EPN                       | -    |
+| Experiment (without walk variables) | Time  |
+|-------------------------------------|-------|
+| Linear Regression                   | 6s    |
+| Random Forest                       | 5m55s |
+| XGBoost                             | 17s   |
+| Linear Regression + EPN             | 3m10s |
+| Random Forest + EPN                 | 3m17s |
+| XGBoost + EPN                       | 3m29s |
 
 
 ## Project Tree
 ```
 ├── checkpoints                   <- Temporary state dictionaries save by the EarlyStopper module
 ├── data
-│   └── vo2_dataset.csv           <- Synthetic dataset for the VO2 peak prediction task
+│   └── vo2_dataset_random.csv    <- Synthetic dataset for the VO2 peak prediction task
 |
 ├── hps                           <- Python files used to store sets of hyperparameter values and search spaces
 ├── masks                         <- JSON files used to store random stratified sampling masks

@@ -17,7 +17,7 @@ class Paths:
     EXPERIMENTS_SCRIPTS: str = join(SCRIPTS, "experiments")
     POST_ANALYSES_SCRIPTS: str = join(SCRIPTS, "post_analyses")
     UTILS_SCRIPTS: str = join(SCRIPTS, "utils")
-    VO2_DATASET_CSV = join(DATA, "vo2_dataset.csv")
+    VO2_DATASET_CSV = join(DATA, "vo2_dataset_random.csv")
     HYPERPARAMETERS: str = join(PROJECT_DIR, "hps")
     MASKS: str = join(PROJECT_DIR, "masks")
     VO2_MASK: str = join(MASKS, "vo2_mask.json")

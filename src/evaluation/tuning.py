@@ -172,7 +172,7 @@ class Objective:
         Returns: function
         """
         def getter(trial: Trial) -> Union[float]:
-            return trial.suggest_uniform(hp.name, self._hps[hp.name][Range.MIN], self._hps[hp.name][Range.MAX])
+            return trial.suggest_float(hp.name, self._hps[hp.name][Range.MIN], self._hps[hp.name][Range.MAX])
 
         return getter
 

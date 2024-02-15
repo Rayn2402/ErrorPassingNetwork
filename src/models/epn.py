@@ -1,5 +1,5 @@
 """
-Description: This file is used to define the Graph Attention Smoothing model.
+Description: This file is used to define the Error Passing Network model.
 """
 from typing import List, Optional, Tuple
 
@@ -16,9 +16,9 @@ from src.utils.hyperparameters import HP, NumericalContinuousHP, NumericalIntHP
 from src.utils.metrics import RootMeanSquaredError
 
 
-class GAS(TorchCustomModel):
+class EPN(TorchCustomModel):
     """
-    Graph Attention Smoothing model
+    Error Passing Network model
     """
     def __init__(self,
                  previous_pred_idx: int,
@@ -227,8 +227,6 @@ class GAS(TorchCustomModel):
             # We only keep predictions previously made for test idx
             y_hat = y_hat[test_idx]
 
-            print(matmul(att, errors))
-
         return (matmul(att, errors) + y_hat).squeeze(dim=-1)
 
     def predict(self,
@@ -267,9 +265,9 @@ class GAS(TorchCustomModel):
                 return self(x, y)
 
 
-class PetaleGASR(TorchRegressorWrapper):
+class PetaleEPN(TorchRegressorWrapper):
     """
-    Graph Attention Smoothing wrapper for the Petale framework
+    Error Passing Network wrapper for the Petale framework
     """
     def __init__(self,
                  previous_pred_idx: int,
@@ -289,7 +287,7 @@ class PetaleGASR(TorchRegressorWrapper):
                  verbose: bool = False):
 
         # Creation of the model
-        model = GAS(previous_pred_idx=previous_pred_idx,
+        model = EPN(previous_pred_idx=previous_pred_idx,
                     pred_mu=pred_mu,
                     pred_std=pred_std,
                     alpha=alpha,
@@ -301,7 +299,7 @@ class PetaleGASR(TorchRegressorWrapper):
                     verbose=verbose)
 
         # Call of parent's constructor
-        # Batch sizes are set to None to use full batch at once
+        # Valid batch size is set to None to use full batch at once
         super().__init__(model=model,
                          train_params=dict(lr=lr,
                                            rho=rho,
@@ -318,12 +316,12 @@ class PetaleGASR(TorchRegressorWrapper):
 
         Returns: list of hyperparameters
         """
-        return list(GASHP())
+        return list(EPNHP())
 
 
-class GASHP:
+class EPNHP:
     """
-    GAS hyperparameters
+    EPN hyperparameters
     """
     ALPHA = NumericalContinuousHP("alpha")
     BATCH_SIZE = NumericalIntHP("batch_size")
