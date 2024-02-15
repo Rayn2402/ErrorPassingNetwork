@@ -11,15 +11,20 @@ To have all the requirements needed, you must do the following actions:
 - Open a terminal
 - Clone this repo: ```git clone git@github.com:Rayn2402/ErrorPassingNetwork.git```
 - Move into the directory: ```cd ErrorPassingNetwork/```
-- Create a virtual environment with conda: ```conda env create --file settings/env.yml```
+- Create a virtual environment with all requirements (except Pytorch) by running the following commands:
+  - ```conda create --name epn python=3.10 scipy seaborn pandas numpy tqdm matplotlib scikit-learn plotly python-kaleido ```
+  - ```conda activate epn```
+  - ```conda install -c conda-forge optuna py-xgboost cmaes```
+  - ```conda install -c dglteam dgl```
+  - ```pip install psycopg2-binary```
+  - ```pip install -U "ray[default]"```
 - Install Pytorch [library](https://pytorch.org/get-started/locally/) according to your hardware requirements
   - Select the latest stable ```Pytorch Build```
   - Select the appropriate version for ```Your OS```
   - Select ```Conda``` as the ```Package```
   - Select ```Python``` as the ```Language```
-  - Select ```Default``` as the ```Compute Platform```
+  - Select ```CPU``` or ```Default``` as the ```Compute Platform```
   - Copy and paste the command provided, but remove ```torchvision``` and ```torchaudio```.
-- Activate your new environment: ```conda activate epn```
   
 ## Test the implementation
 You can write the following lines in a terminal to replicate the experiments of the manuscript 
