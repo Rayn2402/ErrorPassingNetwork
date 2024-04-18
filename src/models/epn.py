@@ -3,7 +3,8 @@ Description: This file is used to define the Error Passing Network model.
 """
 from typing import List, Optional, Tuple
 
-from torch import cat, eye, matmul, no_grad, sqrt, Tensor
+import torch
+from torch import cat, eye, matmul, no_grad, sqrt, Tensor, unique
 from torch.nn import Linear, MSELoss
 from torch.nn.functional import softmax
 from torch.utils.data import DataLoader
@@ -16,10 +17,23 @@ from src.utils.hyperparameters import HP, NumericalContinuousHP, NumericalIntHP
 from src.utils.metrics import RootMeanSquaredError
 
 
+class SimilarityKernel:
+    """
+    Stores the constant related to mask types
+    """
+    ATTENTION: str = "attention"
+    DOT: str = "dot_product"
+    COSINE: str = "cosine"
+
+    def __iter__(self):
+        return iter([self.ATTENTION, self.DOT, self.COSINE])
+
+
 class EPN(TorchCustomModel):
     """
     Error Passing Network model
     """
+
     def __init__(self,
                  previous_pred_idx: int,
                  pred_mu: float,
@@ -30,7 +44,9 @@ class EPN(TorchCustomModel):
                  cat_idx: Optional[List[int]] = None,
                  cat_sizes: Optional[List[int]] = None,
                  cat_emb_sizes: Optional[List[int]] = None,
-                 verbose: bool = False):
+                 verbose: bool = False,
+                 similarity_kernel: str = SimilarityKernel.ATTENTION,
+                 n_neighbors: int = None):
 
         # We call parent's constructor
         super().__init__(criterion=MSELoss(),
@@ -55,9 +71,8 @@ class EPN(TorchCustomModel):
         self._pred_std = pred_std
 
         # Key and Query projection layers
-        # We decrease the input size by one because one column contains predicted targets and will be removed
-        self._key_projection = Linear(self._input_size - 1, self._input_size)
-        self._query_projection = Linear(self._input_size - 1, self._input_size)
+        self._key_projection = None
+        self._query_projection = None
 
         # Scaling factor
         self._dk = sqrt(Tensor([self._input_size]))
@@ -65,9 +80,37 @@ class EPN(TorchCustomModel):
         # Attention map cache
         self._attn_cache = None
 
+        # Number of neighbors and similarity metric
+        self._n_neighbors = n_neighbors
+        self._similarity_kernel = similarity_kernel
+        self._compute_similarity = self._define_similarity_kernel(similarity_kernel)
+
     @property
     def attn_cache(self) -> Tensor:
         return self._attn_cache
+
+    def _define_similarity_kernel(self, similarity_kernel):
+        if similarity_kernel == SimilarityKernel.ATTENTION:
+            # Key and Query projection layers
+            # We decrease the input size by one because one column contains predicted targets and will be removed
+            self._key_projection = Linear(self._input_size - 1, self._input_size)
+            self._query_projection = Linear(self._input_size - 1, self._input_size)
+            # Use the whole dataset when using attention-based kernel similarity
+            self._n_neighbors = None
+
+            def compute_similarity(x1: Tensor, x2: Tensor) -> Tensor:
+                return matmul(self._key_projection(x1), self._query_projection(x2).t()) / self._dk
+        elif similarity_kernel == SimilarityKernel.DOT:
+            def compute_similarity(x1: Tensor, x2: Tensor) -> Tensor:
+                return matmul(x1, x2.t())
+        elif similarity_kernel == SimilarityKernel.COSINE:
+            def compute_similarity(x1: Tensor, x2: Tensor) -> Tensor:
+                return matmul(x1 / torch.norm(x1, dim=1, keepdim=True),
+                              (x2 / torch.norm(x2, dim=1, keepdim=True)).t())
+        else:
+            raise ValueError(f'Similarity kernel: {similarity_kernel} not implemented')
+
+        return compute_similarity
 
     def _execute_valid_step(self,
                             valid_data: Tuple[Optional[DataLoader], PetaleDataset],
@@ -97,7 +140,6 @@ class EPN(TorchCustomModel):
         with no_grad():
 
             for _, _, idx in valid_loader:
-
                 # We perform the forward pass
                 batch_pos_idx = [all_idx.index(i) for i in idx]
                 output = self(x, y, batch_pos_idx)
@@ -116,6 +158,10 @@ class EPN(TorchCustomModel):
 
         if early_stopper.early_stop:
             return True
+
+        # Perform one single epoch if the similarity metric does not require any learning
+        # if self._similarity_kernel != SimilarityKernel.ATTENTION:
+        #     return True
 
         return False
 
@@ -139,7 +185,6 @@ class EPN(TorchCustomModel):
         x, y, all_idx = dataset[dataset.train_mask]
 
         for _, _, idx in train_loader:
-
             # We clear the gradients
             self._optimizer.zero_grad()
 
@@ -175,11 +220,10 @@ class EPN(TorchCustomModel):
         """
 
         # We extract previous prediction made by another model
-        y_hat = (x[:, self._prediction_idx]*self._pred_std)+self._pred_mu
+        y_hat = (x[:, self._prediction_idx] * self._pred_std) + self._pred_mu
 
         # We calculate the errors made on these predictions
         errors = y - y_hat
-
         # We initialize a list of tensors to concatenate
         new_x = []
 
@@ -197,10 +241,19 @@ class EPN(TorchCustomModel):
         if test_idx is None:
 
             # We compute the scaled-dot product
-            att = matmul(self._key_projection(x), self._query_projection(x).t())/self._dk
+            att = self._compute_similarity(x, x)
 
             # We set the diagonal to zero
-            att = att*(1-eye(att.shape[0], att.shape[1]))
+            att = att * (1 - eye(att.shape[0], att.shape[1]))
+
+            # Get the k neighbors
+            if self._n_neighbors != None:
+                att, indices = torch.topk(att, k=max(round(self._n_neighbors*att.shape[1]), 1), dim=-1)
+                errors = errors[indices]
+
+            else:
+                # Reshape the dataset to len(x) * number of total nodes
+                errors = errors.unsqueeze(1).repeat(1, len(x)).permute(1, 0)
 
             # We apply the softmax
             att = softmax(att, dim=-1)
@@ -208,7 +261,7 @@ class EPN(TorchCustomModel):
         else:
 
             # We compute the scaled-dot product
-            att = matmul(self._key_projection(x[test_idx, :]), self._query_projection(x).t())/self._dk
+            att = self._compute_similarity(x[test_idx, :], x)
 
             if not self.training:
 
@@ -221,13 +274,22 @@ class EPN(TorchCustomModel):
                 # We only make sure that self attention value of test elements are zeroed
                 att[range(len(test_idx)), test_idx] = 0
 
+            # Get the k neighbors
+            if self._n_neighbors != None:
+                att, indices = torch.topk(att, k=max(round(self._n_neighbors*att.shape[1]), 1), dim=1)
+                errors = errors[indices]
+
+            else:
+                # Reshape the dataset to test_idx * number of total nodes
+                errors = errors.unsqueeze(1).repeat(1, len(test_idx)).permute(1, 0)
+
             # We apply the softmax
             self._attn_cache = att = softmax(att, dim=-1)
 
             # We only keep predictions previously made for test idx
             y_hat = y_hat[test_idx]
-
-        return (matmul(att, errors) + y_hat).squeeze(dim=-1)
+        return (matmul(att, errors.t())[:, 0] + y_hat).squeeze(dim=-1)
+        # return (matmul(att, errors) + y_hat).squeeze(dim=-1)
 
     def predict(self,
                 dataset: PetaleDataset,
@@ -269,6 +331,7 @@ class PetaleEPN(TorchRegressorWrapper):
     """
     Error Passing Network wrapper for the Petale framework
     """
+
     def __init__(self,
                  previous_pred_idx: int,
                  pred_mu: float,
@@ -284,8 +347,9 @@ class PetaleEPN(TorchRegressorWrapper):
                  batch_size: Optional[int] = None,
                  max_epochs: int = 200,
                  patience: int = 15,
-                 verbose: bool = False):
-
+                 verbose: bool = False,
+                 similarity_kernel: str = SimilarityKernel.ATTENTION,
+                 n_neighbors: int = None):
         # Creation of the model
         model = EPN(previous_pred_idx=previous_pred_idx,
                     pred_mu=pred_mu,
@@ -296,7 +360,9 @@ class PetaleEPN(TorchRegressorWrapper):
                     cat_idx=cat_idx,
                     cat_sizes=cat_sizes,
                     cat_emb_sizes=cat_emb_sizes,
-                    verbose=verbose)
+                    verbose=verbose,
+                    similarity_kernel=similarity_kernel,
+                    n_neighbors=n_neighbors)
 
         # Call of parent's constructor
         # Valid batch size is set to None to use full batch at once
@@ -328,6 +394,7 @@ class EPNHP:
     BETA = NumericalContinuousHP("beta")
     LR = NumericalContinuousHP("lr")
     RHO = NumericalContinuousHP("rho")
+    NEIGHBORS = NumericalIntHP("n_neighbors")
 
     def __iter__(self):
-        return iter([self.ALPHA, self.BATCH_SIZE, self.BETA, self.LR, self.RHO])
+        return iter([self.ALPHA, self.BATCH_SIZE, self.BETA, self.LR, self.RHO, self.NEIGHBORS])
