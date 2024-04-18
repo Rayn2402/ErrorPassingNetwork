@@ -137,6 +137,10 @@ EPNHPS = {
     EPNHP.RHO.name: {
         Range.VALUE: 0
     },
+    EPNHP.NEIGHBORS.name: {
+        Range.MIN: 0.1,
+        Range.MAX: 1.0,
+    }
 }
 
 GATHPS = {
