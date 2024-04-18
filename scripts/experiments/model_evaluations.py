@@ -56,6 +56,9 @@ def retrieve_arguments():
     # Training parameters
     parser.add_argument('-epochs', '--epochs', type=int, default=100,
                         help='Maximal number of epochs during training')
+    parser.add_argument('-kernel', '--kernel', type=str, default='attention',
+                        choices=['attention', 'dot_product', 'cosine'],
+                        help='Similarity kernel to use for connecting patients')
     parser.add_argument('-patience', '--patience', type=int, default=10,
                         help='Number of epochs allowed without improvement (for early stopping)')
     parser.add_argument('-nb_trials', '--nb_trials', type=int, default=500,
@@ -363,7 +366,6 @@ if __name__ == '__main__':
     EPN experiment
     """
     if args.epn and (args.path is not None):
-
         # Start timer
         start = time.time()
 
@@ -381,6 +383,7 @@ if __name__ == '__main__':
                   'cat_sizes': dts.cat_sizes,
                   'cat_emb_sizes': dts.cat_sizes,
                   'max_epochs': args.epochs,
+                  'similarity_kernel': args.kernel,
                   'patience': args.patience}
 
             if 'pred0' in dts.original_data.columns:
@@ -395,6 +398,10 @@ if __name__ == '__main__':
 
         # Update of the hyperparameters
         ss.EPNHPS[EPNHP.RHO.name] = sam_search_space
+
+        # Set the number of neighbors to maximum if attention-based similarity
+        if args.kernel == 'attention':
+            ss.EPNHPS['n_neighbors'] = {'value': None}
 
         # Creation of the evaluator
         evaluator = Evaluator(model_constructor=PetaleEPN,
