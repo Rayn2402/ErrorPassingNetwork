@@ -3,6 +3,7 @@ Description: Script used to produce train, valid and test masks related
              to stratified k-fold splits on the VO2 dataset. Here k=5.
 """
 import sys
+import numpy as np
 from json import dump
 from os.path import dirname, join, realpath
 from sklearn.model_selection import StratifiedKFold, train_test_split
@@ -42,15 +43,15 @@ if __name__ == '__main__':
 
         # We repeat the process using only the data in the training set and the valid set
         inner_skf = StratifiedKFold(n_splits=5)
-        inner_idx = train_idx.tolist() + valid_idx.tolist()
+        inner_idx = np.array(train_idx.tolist() + valid_idx.tolist())
         masks[i][MaskType.INNER] = {}
         for k, (inner_remaining_idx, inner_test_idx) in enumerate(inner_skf.split(x[inner_idx, :], x[inner_idx, j])):
 
             # We extract the inner test idx
-            masks[i][MaskType.INNER][k] = {MaskType.TEST: inner_test_idx.tolist()}
+            masks[i][MaskType.INNER][k] = {MaskType.TEST: inner_idx[inner_test_idx].tolist()}
 
             # We extract the inner train and valid idx
-            inner_train_idx, inner_valid_idx = train_test_split(inner_remaining_idx, train_size=0.80)
+            inner_train_idx, inner_valid_idx = train_test_split(inner_idx[inner_remaining_idx], train_size=0.80)
             masks[i][MaskType.INNER][k][MaskType.TRAIN] = inner_train_idx.tolist()
             masks[i][MaskType.INNER][k][MaskType.VALID] = inner_valid_idx.tolist()
 
