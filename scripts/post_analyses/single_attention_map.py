@@ -35,7 +35,6 @@ if __name__ == '__main__':
     df, target, cont_cols, cat_cols = get_VO2_data()
 
     # 3. Remove the sex from the categorical columns
-    # df.drop([SEX], axis=1, inplace=True)
     cat_cols = None
 
     # 4. Create the dataset
