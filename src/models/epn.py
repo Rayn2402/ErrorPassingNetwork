@@ -159,10 +159,6 @@ class EPN(TorchCustomModel):
         if early_stopper.early_stop:
             return True
 
-        # Perform one single epoch if the similarity metric does not require any learning
-        # if self._similarity_kernel != SimilarityKernel.ATTENTION:
-        #     return True
-
         return False
 
     def _execute_train_step(self, train_data: Tuple[Optional[DataLoader], PetaleDataset]) -> float:
@@ -289,7 +285,6 @@ class EPN(TorchCustomModel):
             # We only keep predictions previously made for test idx
             y_hat = y_hat[test_idx]
         return (matmul(att, errors.t())[:, 0] + y_hat).squeeze(dim=-1)
-        # return (matmul(att, errors) + y_hat).squeeze(dim=-1)
 
     def predict(self,
                 dataset: PetaleDataset,
